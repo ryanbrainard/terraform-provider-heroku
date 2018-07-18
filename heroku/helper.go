@@ -39,5 +39,12 @@ func doesHerokuAppExist(appName string, client *heroku.Service) (*heroku.App, er
 		log.Println(err)
 		return nil, fmt.Errorf("[ERROR] Your app does not exist")
 	}
+
 	return app, nil
+}
+
+func getAppUuid(appName string, client *heroku.Service) string {
+	app, _ := doesHerokuAppExist(appName, client)
+
+	return app.ID
 }
