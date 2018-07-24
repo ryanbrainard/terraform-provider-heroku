@@ -96,6 +96,8 @@ func resourceHerokuAppConfigVarsRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceHerokuAppConfigVarsUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*heroku.Service)
+
 
 	return nil
 }
