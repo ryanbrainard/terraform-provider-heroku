@@ -17,14 +17,14 @@ func resourceHerokuAppConfigVars() *schema.Resource {
 		// TODO: should we handle scenario where a private var is in the public one?
 
 		Schema: map[string]*schema.Schema{
-			"app": {
+			"app_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
 
 			"public": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -33,7 +33,7 @@ func resourceHerokuAppConfigVars() *schema.Resource {
 			},
 
 			"private": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				Sensitive: true,
@@ -98,6 +98,47 @@ func resourceHerokuAppConfigVarsRead(d *schema.ResourceData, meta interface{}) e
 func resourceHerokuAppConfigVarsUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*heroku.Service)
 
+	// Determine if public vars have changed
+	var oldPublicVars, newPublicVars interface{}
+	if d.HasChange("public") {
+		oldPublicVars, newPublicVars = d.GetChange("public")
+
+		if oldPublicVars == nil {
+			oldPublicVars = []interface{}{}
+		}
+		if newPublicVars == nil {
+			newPublicVars = []interface{}{}
+		}
+	}
+
+	// Determine if private vars have changed
+	var oldPrivateVars, newPrivateVars interface{}
+	if d.HasChange("public") {
+		oldPrivateVars, newPrivateVars = d.GetChange("private")
+
+		if oldPrivateVars == nil {
+			oldPrivateVars = []interface{}{}
+		}
+		if newPrivateVars == nil {
+			newPrivateVars = []interface{}{}
+		}
+	}
+
+	// Merge old and public vars together
+	oldVars := []interface{}{}
+	o := append(oldVars, oldPrivateVars)
+	o = append(oldVars, oldPublicVars)
+
+	newVars := []interface{}{}
+	n := append(newVars, newPrivateVars)
+	n = append(newVars, newPublicVars)
+
+	// Update Vars
+	err := updateConfigVars(
+		d.Id(), client, o, n)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
