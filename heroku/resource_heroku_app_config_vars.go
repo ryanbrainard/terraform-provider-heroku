@@ -143,8 +143,12 @@ func resourceHerokuAppConfigVarsUpdate(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
+// Removing the app_config_var resource means moving all config vars from the given app
 func resourceHerokuAppConfigVarsDelete(d *schema.ResourceData, meta interface{}) error {
+	// Essentially perform an Update and then remove the resource from State
+	resourceHerokuAppConfigVarsUpdate(d, meta)
 
+	d.SetId("")
 	return nil
 }
 
