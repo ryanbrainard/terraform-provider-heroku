@@ -8,16 +8,16 @@ import (
 	"context"
 )
 
-func resourceHerokuAppConfigVars() *schema.Resource {
+func resourceHerokuAppConfigVar() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceHerokuAppConfigVarsCreate, // There is no CREATE endpoint for config-vars
-		Read:   resourceHerokuAppConfigVarsRead,
-		Update: resourceHerokuAppConfigVarsUpdate,
-		Delete: resourceHerokuAppConfigVarsDelete,
+		Create: resourceHerokuAppConfigVarCreate, // There is no CREATE endpoint for config-vars
+		Read:   resourceHerokuAppConfigVarRead,
+		Update: resourceHerokuAppConfigVarUpdate,
+		Delete: resourceHerokuAppConfigVarDelete,
 		// TODO: should we handle scenario where a private var is in the public one?
 
 		Schema: map[string]*schema.Schema{
-			"app_id": {
+			"app": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -45,7 +45,7 @@ func resourceHerokuAppConfigVars() *schema.Resource {
 	}
 }
 
-func resourceHerokuAppConfigVarsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceHerokuAppConfigVarCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*heroku.Service)
 
 	// Get App Name
@@ -70,24 +70,24 @@ func resourceHerokuAppConfigVarsCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error creating %s's config vars: %s", appName, err)
 	}
 
-	return resourceHerokuAppConfigVarsRead(d, meta)
+	return resourceHerokuAppConfigVarRead(d, meta)
 }
 
-func resourceHerokuAppConfigVarsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceHerokuAppConfigVarRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*heroku.Service)
 
 	// Get App Name
 	appName := getAppName(d)
 
-	// Get the App Id that we will use as this resource's Id
-	appUuid := getAppUuid(appName, client)
+	//// Get the App Id that we will use as this resource's Id
+	//appUuid := getAppUuid(appName, client)
 
 	configVars, err := client.ConfigVarInfoForApp(context.TODO(), appName)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(appUuid)
+	d.SetId(appName)
 	if err := d.Set("config_vars", configVars); err != nil {
 		log.Printf("[WARN] Error setting config vars: %s", err)
 	}
@@ -95,7 +95,7 @@ func resourceHerokuAppConfigVarsRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceHerokuAppConfigVarsUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceHerokuAppConfigVarUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*heroku.Service)
 
 	// Determine if public vars have changed
@@ -144,9 +144,9 @@ func resourceHerokuAppConfigVarsUpdate(d *schema.ResourceData, meta interface{})
 }
 
 // Removing the app_config_var resource means moving all config vars from the given app
-func resourceHerokuAppConfigVarsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceHerokuAppConfigVarDelete(d *schema.ResourceData, meta interface{}) error {
 	// Essentially perform an Update and then remove the resource from State
-	resourceHerokuAppConfigVarsUpdate(d, meta)
+	resourceHerokuAppConfigVarUpdate(d, meta)
 
 	d.SetId("")
 	return nil
