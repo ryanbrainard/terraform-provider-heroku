@@ -96,7 +96,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	log.Println("[INFO] Initializing Heroku client")
-	return config.Client()
+	return &config, nil
 }
 
 func buildCompositeID(a, b string) string {
