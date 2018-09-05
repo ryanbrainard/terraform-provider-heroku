@@ -39,3 +39,7 @@ The following arguments are supported:
   it can also be sourced from the `HEROKU_EMAIL` environment variable.
 * `headers` - (Optional) Additional Headers to be sent to Heroku. If not provided,
   it can also be sourced from the `HEROKU_HEADERS` environment variable.
+
+## Additional Authentication
+The Heroku provider also supports authentication from .netrc file. However if you have a netrc file
+and environment variables, the latter will be used.
